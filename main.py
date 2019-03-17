@@ -39,19 +39,20 @@ with open(filePath) as input_file:
 
             elif current_section == 6:
                 c.add_biconst(arg, p, 1)
-            elif current_section == 7: #  binary not equal
-
+            elif current_section == 7:  # binary not equal
                 c.add_biconst(arg, p, 0)
-            # elif current_section == 8:
-            #     const_t = ()  # USING A TUPLE FOR TASK SO THAT IT IS HASHABLE
-            #     const_p = []
-            #     for i in arg:
-            #         if i.isupper():  # it is a task if it's an upper case letter
-            #             const_t = const_t + (i,)
-            #         else:
-            #             const_p.append(i)
-            #     c.add_bins(const_t, const_p)
 
+            elif current_section == 8:
+                const_var = []
+                const_value = []
+
+                for i in arg:  # separate the arguments into tasks and processors (values and variables)
+                    if i.isupper():  # it is a task if it's an upper case letter
+                        const_var.append(i)
+                    else:
+                        const_value.append(i)
+
+                c.add_bins(const_var, const_value, p)
 
 
 # def csp_solver(variables, values, constraint):
