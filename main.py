@@ -3,10 +3,13 @@ import os
 from Constraints import Constraints
 
 current_section = 0
-t = {}  # dictionary of tasks (variables)
-p = []  # list of processors (values)
+# TODO deadling is a particular to this CSP
+t = {}  # dictionary of tasks (variables) [key: variable name, value: deadline]
+p = {}  # list of processors (values) [key: index, value: variable value]
+i = 0  # index used to tag values (processors): for matrix search
 c = Constraints()  # constraint class
 deadline = 0  # default value of deadline
+
 
 filePath = str(input("Please enter a file path. Then press enter... "
                      "(Please note the Program will NOT validate the input file)"))
@@ -22,7 +25,8 @@ with open(filePath) as input_file:
             if current_section == 1:  # reading tasks
                 t[arg[0]] = int(arg[1])
             elif current_section == 2:  # reading processors
-                p.append(arg[0])
+                p[i] = arg[0]
+                i += 1
             # elif
             elif current_section == 3:  # deadline
                 deadline = int(arg[0])
@@ -33,10 +37,11 @@ with open(filePath) as input_file:
                 const_p = arg[1:len(arg)]
                 c.add_uex(arg[0], const_p)
 
-            # elif current_section == 6:
-            #     c.add_bieq(arg)
-            elif current_section == 7:
-                c.add_bine(arg)
+            elif current_section == 6:
+                c.add_biconst(arg, p, 1)
+            elif current_section == 7: #  binary not equal
+
+                c.add_biconst(arg, p, 0)
             # elif current_section == 8:
             #     const_t = ()  # USING A TUPLE FOR TASK SO THAT IT IS HASHABLE
             #     const_p = []
