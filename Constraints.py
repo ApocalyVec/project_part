@@ -3,6 +3,7 @@ from Graph import Graph
 
 import numpy
 
+
 class Constraints:
     def __init__(self):
 

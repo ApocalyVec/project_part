@@ -21,8 +21,9 @@ z
 ##### - unary inclusive
 D q r
 G p r y z
+L x y z
 ##### - unary exclusive
-C q r
+C q
 E z
 L y p
 ##### - binary equals

@@ -1,12 +1,11 @@
-'''
-    apply Arc Consistency to the given list of variables
-    :param list variables: list variables to be checked
-    :param Constraint constraint: constraint object against which to check arc consistency
-    :return None, it modifies the domain of the given variable to be arc consistent
-'''
 import queue
 
-
+'''
+    apply Arc Consistency to the given list of variables
+    :param Constraint constraint: constraint object against which to check arc consistency
+    :param list values: list of values
+    :return None, it modifies the domain of the given variable to be arc consistent
+'''
 # TODO arcs should not have duplicate arcs
 def ac_3(constraint, values):
     arcs = queue.Queue()
@@ -26,7 +25,7 @@ def ac_3(constraint, values):
 
     return True
 '''
-    revise the domain of x
+    revise the domain of x, NOTE that it only checks the unary constraint for variables that are connected with arcs
     :param Variable x, y 
     :return bool eantrue iff we revised the domain of x
 '''
@@ -36,7 +35,8 @@ def revise(x, y, constraint, values):
 
     for value in x.domain:
 
-        # check the unary constraint first
+        # check the unary constraint first,
+        # The binary constraint covers the unary constraint
         uex = constraint.get_uex(x)
         uin = constraint.get_uin(x)
 
