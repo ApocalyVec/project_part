@@ -5,6 +5,7 @@ from Csp import Constraints
 from Variable import Variable
 from Solver import ac_3
 from Solver import backtrack
+from Solver import initialize_assignment
 
 current_section = 0
 # TODO deadling is a particular to this CSP
@@ -69,4 +70,12 @@ if not ac_3(csp):
     print("unsolvable, killed")
 print("Variables and their domain after applying Arc Consistency: ")
 csp.print_all_variable()
-backtrack(csp)
+
+assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
+
+initialize_assignment(assignment, csp)
+
+backtrack(assignment, csp)
+
+for var, value in assignment.items():
+    print(var.name + ": " + value)

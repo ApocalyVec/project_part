@@ -14,7 +14,7 @@ class Constraints:
         # with the first variable on rows and the second on columns]
         self.const_graph = Graph()  # a constraint graph contains all the variables that are connected by binary constraints
         # the constraint graph is represented by a dictionary with [key: node, value: connections]
-        self.assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
+        # self.assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
         self.values = []
 
     def __str__(self):
@@ -54,6 +54,12 @@ class Constraints:
     def get_values_len(self):
         return len(self.values)
 
+    # def get_var_value(self, var):
+    #     return self.assignment[var]
+
+    # def assign_var_with_value(self, var, value):
+    #     self.assignment[var] = value
+
     def get_all_variables(self):
         return self.const_graph.get_all_vertices()
 
@@ -63,7 +69,6 @@ class Constraints:
 
     def add_var_to_graph(self, var):
         self.const_graph.add_vertex(var)
-        self.assignment[var] = None
 
     def add_uin(self, const_var, const_value):
         self.uin[const_var] = const_value
@@ -161,6 +166,16 @@ class Constraints:
                             if const_vars.index(const_var) == 1 and self.values[j] not in self.uin[const_var]:
                                 const_matrix[i, j] = 0
 
+    # '''
+    # :return the constraint matrix between two variables
+    # '''
+    # def get_biconst(self, var1, var2):
+    #     for key, value in self.biconst.items():
+    #         # because we keep connection in both direction, we only need to check the constraint matrix in one direction
+    #         # if (var1.name == key[0] and var2.name == key[1]) or (var1.name == key[1] and var2.name == key[0]):
+    #         if var1.name == key[0] and var2.name == key[1]:
+    #             return value
+
     '''
     :return the constraint matrix between two variables
     '''
@@ -170,9 +185,17 @@ class Constraints:
             # if (var1.name == key[0] and var2.name == key[1]) or (var1.name == key[1] and var2.name == key[0]):
             if var1.name == key[0] and var2.name == key[1]:
                 return value
+            elif var1.name == key[1] and var2.name == key[0]:
+                return value.transpose()  # we transpose the matrix to match the variables' axises
 
-    def get_arc(self, var):
+    '''
+    returns a list of pair(list) of variables 
+    '''
+    def get_arcs(self, var):
         return self.const_graph.get_edges(var)
+
+    def get_connecting_vars(self, var):
+        return self.const_graph.get_connecting_vertices(var)
 
     def get_all_arcs(self):
         return self.const_graph.get_all_edges()
@@ -181,20 +204,26 @@ class Constraints:
         for var in self.const_graph.get_all_vertices():
             print(var.name + ", Domain: " + str(var.domain))
 
-    def get_assignment(self):
-        return self.assignment
+    '''
+    :return True if the assignment satifies the constraints
+    '''
+    # def check_value_consistency(self, var, assignment):
 
-    def change_assignment(self, var, value):
-        self.assignment[var] = value
+
+    # def get_assignment(self):
+    #     return self.assignment
+
+    # def change_assignment(self, var, value):
+    #     self.assignment[var] = value
 
     '''
     :return True if all varible are assigned a value
     '''
-    def is_assignment_complete(self):
-        rtn = True
-        for key, value in self.assignment.items():
-            if value == None:
-                rtn = rtn and False
-            else:
-                rtn =  rtn and True
-        return rtn
+    # def is_assignment_complete(self):
+    #     rtn = True
+    #     for key, value in self.assignment.items():
+    #         if value == None:
+    #             rtn = rtn and False
+    #         else:
+    #             rtn =  rtn and True
+    #     return rtn

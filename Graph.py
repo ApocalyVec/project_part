@@ -21,6 +21,9 @@ class Graph:
                 rtn = key
         return rtn
 
+    def get_connecting_vertices(self, vertex):
+        return self.vertex_dic[vertex]
+
     def add_edge(self, start, end):
 
         if start not in self.vertex_dic:
