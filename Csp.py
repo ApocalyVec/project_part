@@ -24,12 +24,19 @@ class Constraints:
 
         # "Binary Constraint: " + [(str(key) + ":\n" + str(value) + "\n") for key, value in self.biconst.items()]
 
+    '''
+    :except Disusaed
+    set values of all variable domain
+    '''
     def set_values(self, values):
         self.values = values
         for var in self.get_all_variables():
             for value in self.values:
                 var.domain.append(value)
 
+    '''
+    add a value to all varibles' domain, and to the values field of the CSP object
+    '''
     def add_value(self, value):
         self.values.append(value)
         for var in self.get_all_variables():
