@@ -1,11 +1,14 @@
 import os
+import copy
 
 from Constraints import Constraints
+from Variable import Variable
+from Solver import ac_3
 
 current_section = 0
 # TODO deadling is a particular to this CSP
-t = {}  # dictionary of tasks (variables) [key: variable name, value: deadline]
-p = {}  # list of processors (values) [key: index, value: variable value]
+# t = []  # list of tasks (variables)
+p = []  # list of processors (values)
 i = 0  # index used to tag values (processors): for matrix search
 c = Constraints()  # constraint class
 deadline = 0  # default value of deadline
@@ -23,11 +26,11 @@ with open(filePath) as input_file:
         else:
             arg = line.rstrip().split(" ")
             if current_section == 1:  # reading tasks
-                t[arg[0]] = int(arg[1])
+                new_task = Variable(arg[0], int(arg[1]))
+                c.add_var_to_graph(new_task)
             elif current_section == 2:  # reading processors
-                p[i] = arg[0]
-                i += 1
-            # elif
+                c.add_value_to_all_variable_domain(arg[0])
+                p.append(arg[0])
             elif current_section == 3:  # deadline
                 deadline = int(arg[0])
             elif current_section == 4:  # unary Inclusive
@@ -55,12 +58,13 @@ with open(filePath) as input_file:
                 c.add_bins(const_var, const_value, p)
 
 
-# def csp_solver(variables, values, constraint):
-
-
-
-print(t)
+# c.const_graph.print_all_vertices()
 print(p)
 print(deadline)
 print(c)
+c.const_graph.print_all_vertices()
 
+if not ac_3(c, p):
+    print("unsolvable, killed")
+print("Variables and their domain after applying Arc Consistency: ")
+c.print_all_variable()

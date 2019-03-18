@@ -22,7 +22,7 @@ z
 D q r
 G p r y z
 ##### - unary exclusive
-C q r
+C q
 E z
 L y p
 ##### - binary equals
