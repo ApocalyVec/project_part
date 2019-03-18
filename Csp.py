@@ -14,6 +14,8 @@ class Constraints:
         # with the first variable on rows and the second on columns]
         self.const_graph = Graph()  # a constraint graph contains all the variables that are connected by binary constraints
         # the constraint graph is represented by a dictionary with [key: node, value: connections]
+        self.assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
+        self.values = []
 
     def __str__(self):
         return "Unary Inclusive: " + str(self.uin) + "\n" + \
@@ -22,15 +24,39 @@ class Constraints:
 
         # "Binary Constraint: " + [(str(key) + ":\n" + str(value) + "\n") for key, value in self.biconst.items()]
 
-    def get_all_variables(self):
-        return self.const_graph.get_all_vertices()
+    def set_values(self, values):
+        self.values = values
+        for var in self.get_all_variables():
+            for value in self.values:
+                var.domain.append(value)
 
-    def add_value_to_all_variable_domain(self, value):
+    def add_value(self, value):
+        self.values.append(value)
         for var in self.get_all_variables():
             var.domain.append(value)
 
+    def get_values(self, values):
+        return self.values
+
+    def get_value_by_index(self, i):
+        return self.values[i]
+
+    def get_index_of_value(self, value):
+        return self.values.index(value)
+
+    def get_values_len(self):
+        return len(self.values)
+
+    def get_all_variables(self):
+        return self.const_graph.get_all_vertices()
+
+    # def add_value_to_all_variable_domain(self):
+    #     for var in self.get_all_variables():
+    #         var.domain.append(self.values)
+
     def add_var_to_graph(self, var):
         self.const_graph.add_vertex(var)
+        self.assignment[var] = None
 
     def add_uin(self, const_var, const_value):
         self.uin[const_var] = const_value
@@ -55,7 +81,7 @@ class Constraints:
         '''
     # TODO handle duplicate binary varible EXCEPTION
     # TODO should say NO ANSWER if a constraint matrix are all zeros
-    def add_biconst(self, const_vars, values, equal):  # constraint type
+    def add_biconst(self, const_vars, equal):  # constraint type
         # TODO what if two bi_const have the same constrainting variable
         # The first value in the tuple takes the rows, and the second takes the columns
         self.const_graph.add_edge(self.const_graph.get_vertex(const_vars[0]), self.const_graph.get_vertex(const_vars[1]))
@@ -66,18 +92,18 @@ class Constraints:
         else:
             if equal:
                 const_matrix = self.biconst[tuple(const_vars)] = numpy.zeros(
-                    shape=(len(values), len(values)), dtype=int)
+                    shape=(len(self.values), len(self.values)), dtype=int)
             else:
                 const_matrix = self.biconst[tuple(const_vars)] = numpy.ones(
-                    shape=(len(values), len(values)), dtype=int)
+                    shape=(len(self.values), len(self.values)), dtype=int)
 
-            for i in range(len(values)):  # modify the constraint matrix
-                for j in range(len(values)):
+            for i in range(len(self.values)):  # modify the constraint matrix
+                for j in range(len(self.values)):
 
-                    if values[i] == values[j]:  # if the values are the same value, they should be constrained
+                    if self.values[i] == self.values[j]:  # if the values are the same value, they should be constrained
                         const_matrix[i, j] = equal  # 0 for not equal, 1 for equal
 
-        self.consolidate_matrix(values)
+        self.consolidate_matrix()
 
 
         '''
@@ -87,7 +113,7 @@ class Constraints:
     :param list const_values: the values to be constrained
     :param dic values: list of values [key: index, value: variable value]
         '''
-    def add_bins(self, const_vars, const_values, values):
+    def add_bins(self, const_vars, const_values):
         # TODO what if two bi_const have the same constrainting variable
         # The first value in the tuple takes the rows, and the second takes the columns
         self.const_graph.add_edge(self.const_graph.get_vertex(const_vars[0]),
@@ -98,34 +124,34 @@ class Constraints:
             system.exit()
         else:
             const_matrix = self.biconst[tuple(const_vars)] = numpy.ones(
-                shape=(len(values), len(values)), dtype=int)
-            for i in range(len(values)):  # modify the constraint matrix
-                for j in range(len(values)):
-                    if (values[ i], values[j]) == (const_values[0], const_values[1]) or (values[i], values[j]) == (const_values[1], const_values[0]):
+                shape=(len(self.values), len(self.values)), dtype=int)
+            for i in range(len(self.values)):  # modify the constraint matrix
+                for j in range(len(self.values)):
+                    if (self.values[ i], self.values[j]) == (const_values[0], const_values[1]) or (self.values[i], self.values[j]) == (const_values[1], const_values[0]):
                         const_matrix[i, j] = 0
 
-        self.consolidate_matrix(values)
+        self.consolidate_matrix()
 
         '''
     add unary constraint to all binary constraint matrices
 
         '''
     # TODO efficiency??? running this for loop everytime
-    def consolidate_matrix(self, values):
+    def consolidate_matrix(self):
         for const_vars, const_matrix in self.biconst.items():
-            for i in range(len(values)):  # modify the constraint matrix
-                for j in range(len(values)):
+            for i in range(len(self.values)):  # modify the constraint matrix
+                for j in range(len(self.values)):
                     for const_var in const_vars:
                         if const_var in self.uex.keys():  # the rows(indexed by i) corresponds to the zeroth const variable; the columns(indexed by j) corresponds to the first const variable
-                            if const_vars.index(const_var) == 0 and values[i] in self.uex[const_var]:
+                            if const_vars.index(const_var) == 0 and self.values[i] in self.uex[const_var]:
                                 const_matrix[i, j] = 0
-                            if const_vars.index(const_var) == 1 and values[j] in self.uex[const_var]:
+                            if const_vars.index(const_var) == 1 and self.values[j] in self.uex[const_var]:
                                 const_matrix[i, j] = 0
 
                         if const_var in self.uin.keys():
-                            if const_vars.index(const_var) == 0 and values[i] not in self.uin[const_var]:
+                            if const_vars.index(const_var) == 0 and self.values[i] not in self.uin[const_var]:
                                 const_matrix[i, j] = 0
-                            if const_vars.index(const_var) == 1 and values[j] not in self.uin[const_var]:
+                            if const_vars.index(const_var) == 1 and self.values[j] not in self.uin[const_var]:
                                 const_matrix[i, j] = 0
 
     '''
@@ -147,3 +173,21 @@ class Constraints:
     def print_all_variable(self):
         for var in self.const_graph.get_all_vertices():
             print(var.name + ", Domain: " + str(var.domain))
+
+    def get_assignment(self):
+        return self.assignment
+
+    def change_assignment(self, var, value):
+        self.assignment[var] = value
+
+    '''
+    :return True if all varible are assigned a value
+    '''
+    def is_assignment_complete(self):
+        rtn = True
+        for key, value in self.assignment.items():
+            if value == None:
+                rtn = rtn and False
+            else:
+                rtn =  rtn and True
+        return rtn
