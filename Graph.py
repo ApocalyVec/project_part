@@ -40,6 +40,7 @@ class Graph:
     '''
     :return list of list with two vertices
     '''
+
     def get_edges(self, vertex):
         rtn = []
         for connection in self.vertex_dic[vertex]:
@@ -49,6 +50,7 @@ class Graph:
     '''
     :return a list of tuples with two vertices
     '''
+
     def get_all_edges(self):
         rtn = []
         # existing = {}
@@ -63,12 +65,9 @@ class Graph:
 
         return rtn
 
-
     def print_all_vertices(self):
         for vertex, connections in self.vertex_dic.items():
             print("Vertex: " + vertex.name + " Connection: ", end="")
             for c in connections:
                 print(c.name, end=" ,")
             print()
-
-

@@ -360,4 +360,25 @@ def check_value_consistency(var, value, assignment, csp):
                 for j in range(csp.get_values_len()):
                     if csp.get_value_by_index(j) in c.domain:
                         rtn = rtn or const_matrix[i, j]
+
+    # The following are domain-specific code for the task-processor problem
+    # process_time = 0
+    # for v in csp.get_all_variables():
+    #     if assignment[v] is not None:
+    #         if assignment[v] == value:
+    #             process_time = process_time + v.tag
+    # if process_time + var.tag >
     return rtn
+
+def generate_run_time(value, assignment, csp):
+    """
+    :return int: the total run time of tasks (variable) on the given processor (value)
+    :param value:
+    :param csp:
+    """
+    process_time = 0
+    for var in csp.get_all_variables():
+        if assignment[var] is not None:
+            if assignment[var] == value:
+                process_time = process_time + var.tag
+    return process_time
