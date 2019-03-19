@@ -1,10 +1,12 @@
 from os import system
 from Graph import Graph
+from runtime import Runtime
 
 import numpy
+import math
 
 
-class Csp:
+class RuntimeCsp:
     def __init__(self):
 
         self.uin = {} # [key: variable name (str), value: list of values]
@@ -16,6 +18,8 @@ class Csp:
         # the constraint graph is represented by a dictionary with [key: node, value: connections]
         # self.assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
         self.values = []
+        self.runtime = None
+        self.deadline = math.inf
 
     def __str__(self):
         return "Unary Inclusive: " + str(self.uin) + "\n" + \
@@ -34,6 +38,16 @@ class Csp:
         for var in self.get_all_variables():
             for value in self.values:
                 var.domain.append(value)
+
+    def set_deadline(self, deadline):
+        self.deadline = deadline
+
+    def make_runtime(self):
+        """
+        this method must be called after values are set
+        """
+        self.runtime = Runtime(self.values)
+
 
     '''
     add a value to all varibles' domain, and to the values field of the CSP object
@@ -206,7 +220,16 @@ class Csp:
         for var in self.const_graph.get_all_vertices():
             print(var.name + ", Domain: " + str(var.domain))
 
+    def get_run_time(self, processor, assignment):
+        return self.runtime.generate_run_time(processor, assignment, self.get_all_variables())
 
+    def is_deadline_met(self, assignment):
+        return self.runtime.get_max_run_time(assignment, self.get_all_variables()) <= self.deadline
+
+    def print_process_time(self, assignment):
+        print("Process Time for Each Processor:")
+        for processor in self.get_values():
+            print("Processor " + processor + ": " + str(self.get_run_time(processor, assignment)))
     '''
     :return True if the assignment satifies the constraints
     '''

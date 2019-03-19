@@ -9,7 +9,7 @@ def inference(var, value, csp):
     special case of ac_3
     :param Variable var:
     :param String value:
-    :param Csp csp:
+    :param runtimecsp csp:
     :return: Boolean; False if a var's domain results in empty
     """
     arcs = queue.Queue()
@@ -163,7 +163,7 @@ def inference_revise(value, x, y, csp):
 def ac_3(csp):
     """
     apply Arc Consistency to the given list of variables
-    :param Csp csp: constraint object against which to check arc consistency
+    :param runtimecsp csp: constraint object against which to check arc consistency
     :return None, it modifies the domain of the given variable to be arc consistent
     """
     arcs = queue.Queue()
@@ -252,6 +252,10 @@ def backtrack(assignment, csp):
         if check_value_consistency(var, value, assignment, csp):
             assignment[var] = value
 
+            if not check_deadline(assignment, csp):
+                assignment[var] = None
+                return None
+
             if inference(var, value, csp):  # if inference left any variable's domain to be empty
                 result = backtrack(assignment, csp)  # recursion call
                 if result is not None:
@@ -272,6 +276,7 @@ def ordered_domain(var, csp):
     """
     for value in csp.get_values():
         print("Num: " + str(get_affected_value_num(var, value, csp)))
+    #TODO have runtimecsp encapsulate this
     var.domain.sort(key=lambda x: get_affected_value_num(var, x, csp), reverse=True)
     return var.domain
 
@@ -368,17 +373,11 @@ def check_value_consistency(var, value, assignment, csp):
     #         if assignment[v] == value:
     #             process_time = process_time + v.tag
     # if process_time + var.tag >
+
     return rtn
 
-def generate_run_time(value, assignment, csp):
-    """
-    :return int: the total run time of tasks (variable) on the given processor (value)
-    :param value:
-    :param csp:
-    """
-    process_time = 0
-    for var in csp.get_all_variables():
-        if assignment[var] is not None:
-            if assignment[var] == value:
-                process_time = process_time + var.tag
-    return process_time
+def check_deadline(assignment, csp):
+    if not csp.is_deadline_met(assignment):
+        return False
+    else:
+        return True

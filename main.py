@@ -1,7 +1,7 @@
 import os
 import copy
 
-from Csp import Csp
+from runtimecsp import RuntimeCsp
 from Variable import Variable
 from Solver import ac_3
 from Solver import backtrack
@@ -12,7 +12,7 @@ current_section = 0
 # t = []  # list of tasks (variables)
 p = []  # list of processors (values)
 i = 0  # index used to tag values (processors): for matrix search
-csp = Csp()  # constraint class
+csp = RuntimeCsp()  # constraint class
 deadline = 0  # default value of deadline
 
 
@@ -35,7 +35,9 @@ with open(filePath) as input_file:
                 p.append(arg[0])
                 csp.add_value(arg[0])
             elif current_section == 3:  # deadline
+                csp.make_runtime()
                 deadline = int(arg[0])
+                csp.set_deadline(deadline)
             elif current_section == 4:  # unary Inclusive
                 const_p = arg[1:len(arg)]
                 csp.add_uin(arg[0], const_p)
@@ -79,6 +81,9 @@ if backtrack(assignment, csp) is not None:
     print("CSP Answer is: ")
     for var, value in assignment.items():
         print(var.name + ": " + value)
+    csp.print_process_time(assignment)
 else:
     print("CSP is UNSOLVABLE, killed")
+
+
 
