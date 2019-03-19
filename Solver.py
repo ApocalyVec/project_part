@@ -132,15 +132,15 @@ def inference_revise(value, x, y, csp):
 
     # check the unary constraint first,
     # The binary constraint covers the unary constraint
-    uex = csp.get_uex(x)
-    uin = csp.get_uin(x)
-
-    if uex:
-        if value in csp.get_uex(x):
-            pruning_value.append(value)
-    if uin:
-        if value not in csp.get_uin(x):
-            pruning_value.append(value)
+    # uex = csp.get_uex(x)
+    # uin = csp.get_uin(x)
+    #
+    # if uex:
+    #     if value in csp.get_uex(x):
+    #         pruning_value.append(value)
+    # if uin:
+    #     if value not in csp.get_uin(x):
+    #         pruning_value.append(value)
 
     # now check the binary constraints
     if biconst is not None:
@@ -225,19 +225,43 @@ def ac_3(csp):
 #
 #     return not not pruning_value  # return true if revised
 
-def revise(x, y, csp):
+def revise(X, Y, csp):
     """
         revise the domain of x, NOTE that it only checks the unary constraint for variables that are connected with arcs
-        :param x Variable
-        :param y Variable
+        :param X Variable
+        :param Y Variable
         :return bool true iff we revised the domain of x
     """
-    rtn = False
-    for value in x.domain:
-        revised = inference_revise(value, x, y, csp)
-        rtn = rtn or revised
+    revised = False
+    const_mat = csp.get_biconst(X, Y)
+    pruning_values = []
 
-    return not not rtn  # return true if revised
+    for x in X.domain:
+        if not is_constraint_satisfied(x, Y, const_mat, csp):
+            pruning_values.append(x)
+            revised = True
+
+    for pv in pruning_values:
+        X.domain.remove(pv)
+
+    return revised  # return true if revised
+
+
+def is_constraint_satisfied(x, Y, const_mat, csp):
+    """
+
+    :param x: the value in X.domain
+    :param Y: the variable to check against
+    :param csp:
+    :return True is there are value in y that allows (x, y) to satisfy the constraint between X and Y_
+    """
+    rtn = False
+    for y in Y.domain:
+        i = csp.get_index_of_value(x)
+        j = csp.get_index_of_value(y)
+        rtn = rtn or const_mat[i, j]
+    return rtn
+
 
 
 def backtrack(assignment, csp, is_rtcost):
