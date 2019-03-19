@@ -72,6 +72,7 @@ def get_affected_value_num(var, value, csp):
     #
     # return len(prune_list)
 
+
 #
 # def inference_prune_list(value, x, y, var_prune_value, csp):
 #     """
@@ -104,16 +105,16 @@ def get_affected_value_num(var, value, csp):
 #             else:
 #                 if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
 #                     prune = prune or biconst[i, j]
-    #
-    #     if not prune:
-    #         pruning_value = value
-    # if x in var_prune_value.keys():
-    #     if pruning_value not in var_prune_value[x]:
-    #         var_prune_value[x].append(pruning_value)
-    # else:
-    #     var_prune_value[x] = [pruning_value]
-    #
-    # return pruning_value
+#
+#     if not prune:
+#         pruning_value = value
+# if x in var_prune_value.keys():
+#     if pruning_value not in var_prune_value[x]:
+#         var_prune_value[x].append(pruning_value)
+# else:
+#     var_prune_value[x] = [pruning_value]
+#
+# return pruning_value
 
 
 def inference_revise(value, x, y, csp):
@@ -239,7 +240,7 @@ def revise(x, y, csp):
     return not not rtn  # return true if revised
 
 
-def backtrack(assignment, csp):
+def backtrack(assignment, csp, is_rtcost):
     """
     NOTE that the Constraint object keeps all the variables. Thus it also keeps all the assignment to variables
     :param assignment:
@@ -248,7 +249,8 @@ def backtrack(assignment, csp):
     """
     if is_assignment_complete(assignment): return assignment
     var = select_unassigned_var(assignment, csp)
-    for value in ordered_domain(var, csp):
+
+    for value in ordered_domain_runtime(var, assignment, csp, is_rtcost):
         if check_value_consistency(var, value, assignment, csp):
             assignment[var] = value
 
@@ -257,7 +259,7 @@ def backtrack(assignment, csp):
                 return None
 
             if inference(var, value, csp):  # if inference left any variable's domain to be empty
-                result = backtrack(assignment, csp)  # recursion call
+                result = backtrack(assignment, csp, is_rtcost)  # recursion call
                 if result is not None:
                     return result
 
@@ -274,11 +276,55 @@ def ordered_domain(var, csp):
     :param csp:
     :return:
     """
-    for value in csp.get_values():
-        print("Num: " + str(get_affected_value_num(var, value, csp)))
-    #TODO have runtimecsp encapsulate this
-    var.domain.sort(key=lambda x: get_affected_value_num(var, x, csp), reverse=True)
-    return var.domain
+    domain_copy = var.domain.copy()
+    # for value in csp.get_values():
+    #     print("Num: " + str(get_affected_value_num(var, value, csp)))
+    # TODO have runtimecsp encapsulate this
+    domain_copy.sort(key=lambda x: get_affected_value_num(var, x, csp), reverse=True)
+
+    return domain_copy
+
+
+def ordered_domain_runtime(var, assignment, csp, is_rtcost):
+    """
+    order the domain of a variable by the rule of least constraining value, breaking ties using RunTime
+    :param var:
+    :param assignment:
+    :param csp:
+    :return:
+    """
+    domain_copy = var.domain.copy()
+    affected_value_dic = {}  # keep a dictionary of affected_value that's also used by RunTime tie breaking
+    for value in domain_copy:
+        affected_value_dic[value] = get_affected_value_num(var, value, csp)
+
+    # for value in csp.get_values():
+    #     print("Num: " + str(get_affected_value_num(var, value, csp)))
+    # TODO have runtimecsp encapsulate this
+    domain_copy.sort(key=lambda x: affected_value_dic[x], reverse=False)
+
+    # breaking ties
+    # group values that has the same 'affected_value_num'
+    nums = set(map(lambda x: affected_value_dic[x], affected_value_dic))  # all the affect_nums that are present
+    grouped_values = [[y[0] for y in affected_value_dic.keys() if affected_value_dic[y] == x] for x in nums]
+    # sort each group by run time
+    rtn = []
+
+
+    for group in grouped_values:
+
+        for value in group:
+            print("Runtime for " + value + " is " + str(csp.get_run_time(value, assignment)))
+        print()
+
+        #  if rtcost is true, we multiple the runtime by its cost for a processor
+        if is_rtcost:
+            group.sort(key=lambda x: csp.get_run_time(x, assignment) * csp.get_rtcost_for_value(x), reverse=False)  # x is a processor (value)
+        else:
+            group.sort(key=lambda x: csp.get_run_time(x, assignment), reverse=False)  # x is a processor (value)
+        rtn = rtn + group
+
+    return rtn
 
 
 def naive_select_unassigned_var(assignment, csp):
@@ -375,6 +421,7 @@ def check_value_consistency(var, value, assignment, csp):
     # if process_time + var.tag >
 
     return rtn
+
 
 def check_deadline(assignment, csp):
     if not csp.is_deadline_met(assignment):

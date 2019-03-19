@@ -20,6 +20,7 @@ class RuntimeCsp:
         self.values = []
         self.runtime = None
         self.deadline = math.inf
+        self.rtcost = {}
 
     def __str__(self):
         return "Unary Inclusive: " + str(self.uin) + "\n" + \
@@ -28,6 +29,30 @@ class RuntimeCsp:
 
         # "Binary Constraint: " + [(str(key) + ":\n" + str(value) + "\n") for key, value in self.biconst.items()]
 
+    def set_rtcost_for_value(self, value, cost):
+        """
+        The function also checks if the value is in the value list of this csp. If not, it will terminate the run
+        Note that this function does not validate if all value has been assigned a value, to do so, call validate_rtcost
+        :param value:
+        :param cost:
+        """
+        if value not in self.values:
+            print("Invalid value in value cost: " + value + "; Killed")
+            system.exit()
+
+        self.rtcost[value] = cost
+
+    def validate_rtcost(self):
+        """
+        :returns true if each value in self.values has a rtcost
+        """
+        for v in self.values:
+            if v not in self.rtcost.keys():
+                return False
+        return True
+
+    def get_rtcost_for_value(self, value):
+        return self.rtcost[value]
 
     def set_values(self, values):
         '''
@@ -41,6 +66,9 @@ class RuntimeCsp:
 
     def set_deadline(self, deadline):
         self.deadline = deadline
+
+    def get_deadline(self):
+        return self.deadline
 
     def make_runtime(self):
         """
@@ -221,6 +249,12 @@ class RuntimeCsp:
             print(var.name + ", Domain: " + str(var.domain))
 
     def get_run_time(self, processor, assignment):
+        """
+        get the time the processor needs to run its assignments
+        :param str/value processor:
+        :param dictionary [key = Variable, value = str/value] assignment:
+        :return: the time the processor needs to run its assignments
+        """
         return self.runtime.generate_run_time(processor, assignment, self.get_all_variables())
 
     def is_deadline_met(self, assignment):

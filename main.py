@@ -1,5 +1,5 @@
+from os import system
 import os
-import copy
 
 from runtimecsp import RuntimeCsp
 from Variable import Variable
@@ -14,6 +14,35 @@ p = []  # list of processors (values)
 i = 0  # index used to tag values (processors): for matrix search
 csp = RuntimeCsp()  # constraint class
 deadline = 0  # default value of deadline
+
+
+def run(csp, is_rtcost):
+    print("The deadline is " + str(csp.get_deadline()))
+    print("The constrains are: ")
+    print(csp)
+    print("Variables connected with binary constraints:")
+    csp.const_graph.print_all_vertices()
+
+    print()
+
+    if not ac_3(csp):
+        print("CSP is AC3 INCONSISTENT, killed")
+    print("Variables and their domain after applying Arc Consistency: ")
+    csp.print_all_variable()
+
+    assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
+
+    initialize_assignment(assignment, csp)
+
+    print()
+
+    if backtrack(assignment, csp, is_rtcost) is not None:
+        print("CSP Answer is: ")
+        for var, value in assignment.items():
+            print(var.name + ": " + value)
+        csp.print_process_time(assignment)
+    else:
+        print("CSP is UNSOLVABLE, killed")
 
 
 filePath = str(input("Please enter a file path. Then press enter... "
@@ -62,28 +91,24 @@ with open(filePath) as input_file:
 
                 csp.add_bins(const_var, const_value)
 
+# ask if the user want to provide file as input cost
+rt_cost_inquiry = str(input("Do you have Run Time Cost?[y/otherwise]"))
+is_rtcost = rt_cost_inquiry == "y" or rt_cost_inquiry == "Y"
 
-# c.const_graph.print_all_vertices()
-print(deadline)
-print(csp)
-csp.const_graph.print_all_vertices()
+if is_rtcost:
 
-if not ac_3(csp):
-    print("CSP is AC3 INCONSISTENT, killed")
-print("Variables and their domain after applying Arc Consistency: ")
-csp.print_all_variable()
+    filePath = str(input("Please enter the file path for Run Time Cost... "
+                         "(Please note the Program will NOT validate the input file)"))
+    print('reading ' + filePath)
+    assert os.path.exists(filePath), "File not found at " + filePath + ", Exiting..."
+    with open(filePath) as input_file:
+        for line in input_file:
+            arg = line.rstrip().split(" ")
+            csp.set_rtcost_for_value(arg[0], int(arg[1]))
 
-assignment = {}  # represent the assignment of variabels [Key: Variable, Value: value (str)]
-
-initialize_assignment(assignment, csp)
-
-if backtrack(assignment, csp) is not None:
-    print("CSP Answer is: ")
-    for var, value in assignment.items():
-        print(var.name + ": " + value)
-    csp.print_process_time(assignment)
-else:
-    print("CSP is UNSOLVABLE, killed")
+    if not csp.validate_rtcost():
+        print("Run Time Cost File is missing cost for values specified in the first input file, killed")
+        system.exit()
 
 
-
+run(csp, is_rtcost)

@@ -17,7 +17,7 @@ x
 y
 z
 ##### - deadline constraint
-24
+22
 ##### - unary inclusive
 D q r
 G p r y z
