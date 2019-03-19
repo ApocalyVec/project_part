@@ -4,7 +4,7 @@ from Graph import Graph
 import numpy
 
 
-class Constraints:
+class Csp:
     def __init__(self):
 
         self.uin = {} # [key: variable name (str), value: list of values]
@@ -24,11 +24,12 @@ class Constraints:
 
         # "Binary Constraint: " + [(str(key) + ":\n" + str(value) + "\n") for key, value in self.biconst.items()]
 
-    '''
-    :except Disusaed
-    set values of all variable domain
-    '''
+
     def set_values(self, values):
+        '''
+        :except Disused
+        set values of all variable domain
+        '''
         self.values = values
         for var in self.get_all_variables():
             for value in self.values:
@@ -53,6 +54,7 @@ class Constraints:
 
     def get_values_len(self):
         return len(self.values)
+
 
     # def get_var_value(self, var):
     #     return self.assignment[var]

@@ -1,7 +1,7 @@
 import os
 import copy
 
-from Csp import Constraints
+from Csp import Csp
 from Variable import Variable
 from Solver import ac_3
 from Solver import backtrack
@@ -12,7 +12,7 @@ current_section = 0
 # t = []  # list of tasks (variables)
 p = []  # list of processors (values)
 i = 0  # index used to tag values (processors): for matrix search
-csp = Constraints()  # constraint class
+csp = Csp()  # constraint class
 deadline = 0  # default value of deadline
 
 
@@ -67,7 +67,7 @@ print(csp)
 csp.const_graph.print_all_vertices()
 
 if not ac_3(csp):
-    print("unsolvable, killed")
+    print("CSP is AC3 INCONSISTENT, killed")
 print("Variables and their domain after applying Arc Consistency: ")
 csp.print_all_variable()
 
@@ -75,7 +75,10 @@ assignment = {}  # represent the assignment of variabels [Key: Variable, Value: 
 
 initialize_assignment(assignment, csp)
 
-backtrack(assignment, csp)
+if backtrack(assignment, csp) is not None:
+    print("CSP Answer is: ")
+    for var, value in assignment.items():
+        print(var.name + ": " + value)
+else:
+    print("CSP is UNSOLVABLE, killed")
 
-for var, value in assignment.items():
-    print(var.name + ": " + value)
