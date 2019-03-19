@@ -313,9 +313,9 @@ def ordered_domain_runtime(var, assignment, csp, is_rtcost):
 
     for group in grouped_values:
 
-        for value in group:
-            print("Runtime for " + value + " is " + str(csp.get_run_time(value, assignment)))
-        print()
+        # for value in group:
+        #     print("Runtime for " + value + " is " + str(csp.get_run_time(value, assignment)))
+        # print()
 
         #  if rtcost is true, we multiple the runtime by its cost for a processor
         if is_rtcost:
@@ -398,7 +398,6 @@ def check_value_consistency(var, value, assignment, csp):
 
     # TODO the following part checks the binary constraints,
     # TODO it is very similar to what happended in revise function use in ac3
-    rtn = True  # only using in this part
     if connecting_var is not None:  # if the variable has connections
         i = csp.get_index_of_value(value)  # get the index of the value being checked
 
@@ -406,11 +405,13 @@ def check_value_consistency(var, value, assignment, csp):
             const_matrix = csp.get_biconst(var, c)  # note that by doing this, var is the y axis, c is the x axis
 
             if assignment[c] is not None:
-                rtn = const_matrix[i, csp.get_index_of_value(assignment[c])]
-            else:
-                for j in range(csp.get_values_len()):
-                    if csp.get_value_by_index(j) in c.domain:
-                        rtn = rtn or const_matrix[i, j]
+                if const_matrix[i, csp.get_index_of_value(assignment[c])] == 0:
+                    return False
+            # else:
+            #     for j in range(csp.get_values_len()):
+            #         if csp.get_value_by_index(j) in c.domain:
+            #             if const_matrix[i, j] == 0:
+            #                 return False
 
     # The following are domain-specific code for the task-processor problem
     # process_time = 0
@@ -420,7 +421,7 @@ def check_value_consistency(var, value, assignment, csp):
     #             process_time = process_time + v.tag
     # if process_time + var.tag >
 
-    return rtn
+    return True
 
 
 def check_deadline(assignment, csp):
