@@ -43,7 +43,7 @@ class Csp:
         for var in self.get_all_variables():
             var.domain.append(value)
 
-    def get_values(self, values):
+    def get_values(self):
         return self.values
 
     def get_value_by_index(self, i):
@@ -205,6 +205,7 @@ class Csp:
     def print_all_variable(self):
         for var in self.const_graph.get_all_vertices():
             print(var.name + ", Domain: " + str(var.domain))
+
 
     '''
     :return True if the assignment satifies the constraints

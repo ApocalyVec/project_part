@@ -5,7 +5,8 @@ from os import system
 
 def inference(var, value, csp):
     """
-    inference using ac_3
+    inference using ac_3, it is very similar to ac_3 except inference only checks the assigned value. Inference is a
+    special case of ac_3
     :param Variable var:
     :param String value:
     :param Csp csp:
@@ -17,13 +18,107 @@ def inference(var, value, csp):
 
     while not arcs.empty():
         arc = arcs.get()
-        # if inference_revise()
+        if inference_revise(value, arc[0], arc[1], csp):  # if revised
+            if not arc[0].domain:
+                return False
+            for propagating_arc in csp.get_arcs(arc[0]):
+                arcs.put(propagating_arc)
 
     return True
 
+
+def get_affected_value_num(var, value, csp):
+    """
+    only considers neighbors, otherwise very similar to inference_revise
+    pruned values
+    :param var:
+    :param value:
+    :param csp:
+    :return:
+    """
+    prune_count = 0
+    connections = csp.get_connecting_vars(var)
+
+    for c in connections:
+        biconst = csp.get_biconst(c, var)
+        if biconst is not None:
+            prune = False
+            i = csp.get_index_of_value(value)
+
+            for j in range(csp.get_values_len()):
+                if value in c.domain:
+                    prune = prune or biconst[i, j]
+            if not prune:
+                prune_count = prune_count + 1
+
+    return prune_count
+
+    # prune_list = []
+    # var_prune_value = {}
+    # arcs = queue.Queue()
+    #
+    # for c in csp.get_arcs(var):
+    #     arcs.put(c)
+    #
+    # while not arcs.empty():
+    #     arc = arcs.get()
+    #     pruning_value = inference_prune_list(value, arc[0], arc[1], var_prune_value, csp)
+    #     if pruning_value is not None:  # if revised
+    #         prune_list.append(pruning_value)
+    #         if not arc[0].domain:
+    #             return len(prune_list)  # TODO this value should not be considered
+    #         for propagating_arc in csp.get_arcs(arc[0]):
+    #             arcs.put(propagating_arc)
+    #
+    # return len(prune_list)
+
+#
+# def inference_prune_list(value, x, y, var_prune_value, csp):
+#     """
+#     return the list of value that needs to be pruned from x's domain given that the value assigned to x is @param value
+#     :param value:
+#     :param x:
+#     :param y:
+#     :param csp:
+#
+#     :usage: this function is called by revise which is called by ac_3
+#     """
+#     pruning_value = None
+#     biconst = csp.get_biconst(x, y)
+#
+#     # check the unary constraint first,
+#     # The binary constraint covers the unary constraint
+#     uex = csp.get_uex(x)
+#     uin = csp.get_uin(x)
+#
+#     # now check the binary constraints
+#     if biconst is not None:
+#         prune = False
+#         i = csp.get_index_of_value(value)
+#
+#         for j in range(csp.get_values_len()):
+#             if x in var_prune_value.keys():
+#                 if csp.get_value_by_index(j) in y.domain and csp.get_value_by_index(j) not in var_prune_value[
+#                     x]:  # if the value is still in y's domain
+#                     prune = prune or biconst[i, j]
+#             else:
+#                 if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
+#                     prune = prune or biconst[i, j]
+    #
+    #     if not prune:
+    #         pruning_value = value
+    # if x in var_prune_value.keys():
+    #     if pruning_value not in var_prune_value[x]:
+    #         var_prune_value[x].append(pruning_value)
+    # else:
+    #     var_prune_value[x] = [pruning_value]
+    #
+    # return pruning_value
+
+
 def inference_revise(value, x, y, csp):
     """
-    return the list of value that needs to be pruned from x's domain given that the value assigned to x is @param value
+    return boolean
     :param value:
     :param x:
     :param y:
@@ -57,7 +152,7 @@ def inference_revise(value, x, y, csp):
 
         if not prune:
             pruning_value.append(value)
-    #TODO prune_value needs not to be a list
+    # TODO prune_value needs not to be a list
     for pv in pruning_value:
         x.prune_value(pv)
 
@@ -86,6 +181,7 @@ def ac_3(csp):
                 arcs.put(propagating_arc)
 
     return True
+
 
 # def revise(x, y, csp):
 #     """
@@ -152,7 +248,7 @@ def backtrack(assignment, csp):
     """
     if is_assignment_complete(assignment): return assignment
     var = select_unassigned_var(assignment, csp)
-    for value in ordered_domain(var, assignment, csp):
+    for value in ordered_domain(var, csp):
         if check_value_consistency(var, value, assignment, csp):
             assignment[var] = value
 
@@ -166,7 +262,7 @@ def backtrack(assignment, csp):
     return None
 
 
-def ordered_domain(var, assignment, csp):
+def ordered_domain(var, csp):
     """
     order the domain of a variable by the rule of least constraining value
     :param var:
@@ -174,6 +270,9 @@ def ordered_domain(var, assignment, csp):
     :param csp:
     :return:
     """
+    for value in csp.get_values():
+        print("Num: " + str(get_affected_value_num(var, value, csp)))
+    var.domain.sort(key=lambda x: get_affected_value_num(var, x, csp), reverse=True)
     return var.domain
 
 
@@ -254,8 +353,11 @@ def check_value_consistency(var, value, assignment, csp):
 
         for c in connecting_var:
             const_matrix = csp.get_biconst(var, c)  # note that by doing this, var is the y axis, c is the x axis
-            for j in range(csp.get_values_len()):
-                if csp.get_value_by_index(j) in c.domain:
-                    rtn = rtn or const_matrix[i, j]
 
+            if assignment[c] is not None:
+                rtn = const_matrix[i, csp.get_index_of_value(assignment[c])]
+            else:
+                for j in range(csp.get_values_len()):
+                    if csp.get_value_by_index(j) in c.domain:
+                        rtn = rtn or const_matrix[i, j]
     return rtn
