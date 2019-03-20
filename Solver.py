@@ -115,8 +115,10 @@ def backtrack(assignment, csp, is_rtcost):
     """
     if is_assignment_complete(assignment): return assignment
     var = select_unassigned_var(assignment, csp)
-    print("Considering: " + var.name)
+    print()
+    print("Considering: " + var.name + ", Trying: ")
     for value in ordered_domain_runtime(var, assignment, csp, is_rtcost):
+        print("[value " + value + "]")
         if check_value_consistency(var, value, assignment, csp):
             assignment[var] = value
 
@@ -125,6 +127,7 @@ def backtrack(assignment, csp, is_rtcost):
                 return None
 
             if inference(var, value, csp):  # if inference left any variable's domain to be empty
+                print("Assignment is " + str([(key.name + "-" + str(value)) for key, value in assignment.items()]))
                 result = backtrack(assignment, csp, is_rtcost)  # recursion call
                 if result is not None:
                     return result

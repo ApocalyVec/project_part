@@ -37,6 +37,7 @@ def run(csp, is_rtcost):
     print()
 
     if backtrack(assignment, csp, is_rtcost) is not None:
+        print()
         print("CSP Answer is: ")
         for var, value in assignment.items():
             print(var.name + ": " + value)
