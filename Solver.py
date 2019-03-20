@@ -1,6 +1,6 @@
 import math
 import queue
-from os import system
+import sys
 
 
 def inference(var, value, csp):
@@ -14,34 +14,6 @@ def inference(var, value, csp):
     :param runtimecsp csp:
     :return: Boolean; False if a var's domain results in empty
     """
-    # arcs = queue.Queue()
-
-    # put arcs in the queue
-    # for a in csp.get_all_arcs():
-    #     arcs.put(a)
-    #
-    # while not arcs.empty():
-    #     arc = arcs.get()
-    #     if revise(arc[0], arc[1], csp):  # revising the domain of arc[0]
-    #         if not arc[0].domain:
-    #             return False
-    #         for propagating_arc in csp.get_arcs(arc[0]):
-    #             arcs.put(propagating_arc)
-
-    # return True
-
-    # arcs = queue.Queue()
-    # for c in csp.get_arcs(var):
-    #     arcs.put(c)
-    #
-    # while not arcs.empty():
-    #     arc = arcs.get()
-    #     if inference_revise(value, arc[0], arc[1], csp):  # if revised
-    #         if not arc[0].domain:
-    #             return False
-    #         for propagating_arc in csp.get_arcs(arc[0]):
-    #             arcs.put(propagating_arc)
-    #
     return True
 
 
@@ -70,49 +42,6 @@ def get_affected_value_num(var, value, csp):
                 prune_count = prune_count + 1
 
     return prune_count
-
-
-# def inference_revise(value, x, y, csp):
-#     """
-#     return boolean
-#     :param value:
-#     :param x:
-#     :param y:
-#     :param csp:
-#
-#     :usage: this function is called by revise which is called by ac_3
-#     """
-#     pruning_value = []
-#     biconst = csp.get_biconst(x, y)
-#
-#     # check the unary constraint first,
-#     # The binary constraint covers the unary constraint
-#     # uex = csp.get_uex(x)
-#     # uin = csp.get_uin(x)
-#     #
-#     # if uex:
-#     #     if value in csp.get_uex(x):
-#     #         pruning_value.append(value)
-#     # if uin:
-#     #     if value not in csp.get_uin(x):
-#     #         pruning_value.append(value)
-#
-#     # now check the binary constraints
-#     if biconst is not None:
-#         prune = False
-#         i = csp.get_index_of_value(value)
-#
-#         for j in range(csp.get_values_len()):
-#             if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
-#                 prune = prune or biconst[i, j]
-#
-#         if not prune:
-#             pruning_value.append(value)
-#     # TODO prune_value needs not to be a list
-#     for pv in pruning_value:
-#         x.prune_value(pv)
-#
-#     return not not pruning_value
 
 
 # TODO arcs should not have duplicate arcs
@@ -186,7 +115,7 @@ def backtrack(assignment, csp, is_rtcost):
     """
     if is_assignment_complete(assignment): return assignment
     var = select_unassigned_var(assignment, csp)
-
+    print("Considering: " + var.name)
     for value in ordered_domain_runtime(var, assignment, csp, is_rtcost):
         if check_value_consistency(var, value, assignment, csp):
             assignment[var] = value
@@ -298,11 +227,11 @@ def select_unassigned_var(assignment, csp):
     if len(min_var_list) == 1:  # just return the variable if there's one most constrained variable
         return min_var_list[0]
     elif len(min_var_list) > 1:  # break tie using Degree Heuristic
-        min_var_list.sort(key=lambda x: (len(csp.get_connecting_vars(x))), reverse=True)
+        min_var_list.sort(key=lambda x: (len(csp.get_connecting_unassigned_vars(x, assignment))), reverse=True)
         return min_var_list[0]
     else:
         print("Solver: select_unassigned_var: bad var list")
-        system.exit()
+        sys.exit()
 
 
 def is_assignment_complete(assignment):

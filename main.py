@@ -1,4 +1,4 @@
-from os import system
+import sys
 import os
 
 from runtimecsp import RuntimeCsp
@@ -43,6 +43,9 @@ def run(csp, is_rtcost):
         csp.print_process_time(assignment)
     else:
         print("CSP is UNSOLVABLE, killed")
+        sys.exit()
+
+    csp.print_total_run_time(assignment)
 
 
 filePath = str(input("Please enter a file path. Then press enter... "
@@ -108,7 +111,7 @@ if is_rtcost:
 
     if not csp.validate_rtcost():
         print("Run Time Cost File is missing cost for values specified in the first input file, killed")
-        system.exit()
+        sys.exit()
 
 
 run(csp, is_rtcost)

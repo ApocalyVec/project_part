@@ -241,6 +241,15 @@ class RuntimeCsp:
     def get_connecting_vars(self, var):
         return self.const_graph.get_connecting_vertices(var)
 
+    def get_connecting_unassigned_vars(self, var, assignment):
+        connecting_vars = self.const_graph.get_connecting_vertices(var)
+        rtn = []
+        for var in connecting_vars:
+            if assignment[var] is None:
+                rtn.append(var)
+        return rtn
+
+
     def get_all_arcs(self):
         return self.const_graph.get_all_edges()
 
@@ -264,26 +273,8 @@ class RuntimeCsp:
         print("Process Time for Each Processor:")
         for processor in self.get_values():
             print("Processor " + processor + ": " + str(self.get_run_time(processor, assignment)))
-    '''
-    :return True if the assignment satifies the constraints
-    '''
-    # def check_value_consistency(self, var, assignment):
 
-
-    # def get_assignment(self):
-    #     return self.assignment
-
-    # def change_assignment(self, var, value):
-    #     self.assignment[var] = value
-
-    '''
-    :return True if all varible are assigned a value
-    '''
-    # def is_assignment_complete(self):
-    #     rtn = True
-    #     for key, value in self.assignment.items():
-    #         if value == None:
-    #             rtn = rtn and False
-    #         else:
-    #             rtn =  rtn and True
-    #     return rtn
+    def print_total_run_time(self, assignment):
+        ordered_processor = self.get_values()
+        ordered_processor.sort(key=lambda x: self.get_run_time(x, assignment), reverse=True)
+        print("The total run time is: " + str(self.get_run_time(ordered_processor[0], assignment)) + ", by processor " + ordered_processor[0])
