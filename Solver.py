@@ -5,25 +5,43 @@ from os import system
 
 def inference(var, value, csp):
     """
-    inference using ac_3, it is very similar to ac_3 except inference only checks the assigned value. Inference is a
+    inference using ac_3, it is very similar to ac_3 except it start only the arcs connecting to Xj
+    there’s no point of running forward checking if we have already done arc consistency as a preprocessing step
+
     special case of ac_3
     :param Variable var:
     :param String value:
     :param runtimecsp csp:
     :return: Boolean; False if a var's domain results in empty
     """
-    arcs = queue.Queue()
-    for c in csp.get_arcs(var):
-        arcs.put(c)
+    # arcs = queue.Queue()
 
-    while not arcs.empty():
-        arc = arcs.get()
-        if inference_revise(value, arc[0], arc[1], csp):  # if revised
-            if not arc[0].domain:
-                return False
-            for propagating_arc in csp.get_arcs(arc[0]):
-                arcs.put(propagating_arc)
+    # put arcs in the queue
+    # for a in csp.get_all_arcs():
+    #     arcs.put(a)
+    #
+    # while not arcs.empty():
+    #     arc = arcs.get()
+    #     if revise(arc[0], arc[1], csp):  # revising the domain of arc[0]
+    #         if not arc[0].domain:
+    #             return False
+    #         for propagating_arc in csp.get_arcs(arc[0]):
+    #             arcs.put(propagating_arc)
 
+    # return True
+
+    # arcs = queue.Queue()
+    # for c in csp.get_arcs(var):
+    #     arcs.put(c)
+    #
+    # while not arcs.empty():
+    #     arc = arcs.get()
+    #     if inference_revise(value, arc[0], arc[1], csp):  # if revised
+    #         if not arc[0].domain:
+    #             return False
+    #         for propagating_arc in csp.get_arcs(arc[0]):
+    #             arcs.put(propagating_arc)
+    #
     return True
 
 
@@ -53,30 +71,10 @@ def get_affected_value_num(var, value, csp):
 
     return prune_count
 
-    # prune_list = []
-    # var_prune_value = {}
-    # arcs = queue.Queue()
-    #
-    # for c in csp.get_arcs(var):
-    #     arcs.put(c)
-    #
-    # while not arcs.empty():
-    #     arc = arcs.get()
-    #     pruning_value = inference_prune_list(value, arc[0], arc[1], var_prune_value, csp)
-    #     if pruning_value is not None:  # if revised
-    #         prune_list.append(pruning_value)
-    #         if not arc[0].domain:
-    #             return len(prune_list)  # TODO this value should not be considered
-    #         for propagating_arc in csp.get_arcs(arc[0]):
-    #             arcs.put(propagating_arc)
-    #
-    # return len(prune_list)
 
-
-#
-# def inference_prune_list(value, x, y, var_prune_value, csp):
+# def inference_revise(value, x, y, csp):
 #     """
-#     return the list of value that needs to be pruned from x's domain given that the value assigned to x is @param value
+#     return boolean
 #     :param value:
 #     :param x:
 #     :param y:
@@ -84,13 +82,20 @@ def get_affected_value_num(var, value, csp):
 #
 #     :usage: this function is called by revise which is called by ac_3
 #     """
-#     pruning_value = None
+#     pruning_value = []
 #     biconst = csp.get_biconst(x, y)
 #
 #     # check the unary constraint first,
 #     # The binary constraint covers the unary constraint
-#     uex = csp.get_uex(x)
-#     uin = csp.get_uin(x)
+#     # uex = csp.get_uex(x)
+#     # uin = csp.get_uin(x)
+#     #
+#     # if uex:
+#     #     if value in csp.get_uex(x):
+#     #         pruning_value.append(value)
+#     # if uin:
+#     #     if value not in csp.get_uin(x):
+#     #         pruning_value.append(value)
 #
 #     # now check the binary constraints
 #     if biconst is not None:
@@ -98,66 +103,16 @@ def get_affected_value_num(var, value, csp):
 #         i = csp.get_index_of_value(value)
 #
 #         for j in range(csp.get_values_len()):
-#             if x in var_prune_value.keys():
-#                 if csp.get_value_by_index(j) in y.domain and csp.get_value_by_index(j) not in var_prune_value[
-#                     x]:  # if the value is still in y's domain
-#                     prune = prune or biconst[i, j]
-#             else:
-#                 if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
-#                     prune = prune or biconst[i, j]
+#             if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
+#                 prune = prune or biconst[i, j]
 #
-#     if not prune:
-#         pruning_value = value
-# if x in var_prune_value.keys():
-#     if pruning_value not in var_prune_value[x]:
-#         var_prune_value[x].append(pruning_value)
-# else:
-#     var_prune_value[x] = [pruning_value]
+#         if not prune:
+#             pruning_value.append(value)
+#     # TODO prune_value needs not to be a list
+#     for pv in pruning_value:
+#         x.prune_value(pv)
 #
-# return pruning_value
-
-
-def inference_revise(value, x, y, csp):
-    """
-    return boolean
-    :param value:
-    :param x:
-    :param y:
-    :param csp:
-
-    :usage: this function is called by revise which is called by ac_3
-    """
-    pruning_value = []
-    biconst = csp.get_biconst(x, y)
-
-    # check the unary constraint first,
-    # The binary constraint covers the unary constraint
-    # uex = csp.get_uex(x)
-    # uin = csp.get_uin(x)
-    #
-    # if uex:
-    #     if value in csp.get_uex(x):
-    #         pruning_value.append(value)
-    # if uin:
-    #     if value not in csp.get_uin(x):
-    #         pruning_value.append(value)
-
-    # now check the binary constraints
-    if biconst is not None:
-        prune = False
-        i = csp.get_index_of_value(value)
-
-        for j in range(csp.get_values_len()):
-            if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
-                prune = prune or biconst[i, j]
-
-        if not prune:
-            pruning_value.append(value)
-    # TODO prune_value needs not to be a list
-    for pv in pruning_value:
-        x.prune_value(pv)
-
-    return not not pruning_value
+#     return not not pruning_value
 
 
 # TODO arcs should not have duplicate arcs
@@ -183,47 +138,6 @@ def ac_3(csp):
 
     return True
 
-
-# def revise(x, y, csp):
-#     """
-#         revise the domain of x, NOTE that it only checks the unary constraint for variables that are connected with arcs
-#         :param x Variable
-#         :param y Variable
-#         :return bool true iff we revised the domain of x
-#     """
-#     pruning_value = []
-#     biconst = csp.get_biconst(x, y)
-#
-#     for value in x.domain:
-#
-#         # check the unary constraint first,
-#         # The binary constraint covers the unary constraint
-#         uex = csp.get_uex(x)
-#         uin = csp.get_uin(x)
-#
-#         if uex:
-#             if value in csp.get_uex(x):
-#                 pruning_value.append(value)
-#         if uin:
-#             if value not in csp.get_uin(x):
-#                 pruning_value.append(value)
-#
-#         # now check the binary constraints
-#         if biconst is not None:
-#             prune = False
-#             i = csp.get_index_of_value(value)
-#
-#             for j in range(csp.get_values_len()):
-#                 if csp.get_value_by_index(j) in y.domain:  # if the value is still in y's domain
-#                     prune = prune or biconst[i, j]
-#
-#             if not prune:
-#                 pruning_value.append(value)
-#
-#     for pv in pruning_value:
-#         x.prune_value(pv)
-#
-#     return not not pruning_value  # return true if revised
 
 def revise(X, Y, csp):
     """
@@ -261,7 +175,6 @@ def is_constraint_satisfied(x, Y, const_mat, csp):
         j = csp.get_index_of_value(y)
         rtn = rtn or const_mat[i, j]
     return rtn
-
 
 
 def backtrack(assignment, csp, is_rtcost):
@@ -334,7 +247,6 @@ def ordered_domain_runtime(var, assignment, csp, is_rtcost):
     # sort each group by run time
     rtn = []
 
-
     for group in grouped_values:
 
         # for value in group:
@@ -343,7 +255,8 @@ def ordered_domain_runtime(var, assignment, csp, is_rtcost):
 
         #  if rtcost is true, we multiple the runtime by its cost for a processor
         if is_rtcost:
-            group.sort(key=lambda x: csp.get_run_time(x, assignment) * csp.get_rtcost_for_value(x), reverse=False)  # x is a processor (value)
+            group.sort(key=lambda x: csp.get_run_time(x, assignment) * csp.get_rtcost_for_value(x),
+                       reverse=False)  # x is a processor (value)
         else:
             group.sort(key=lambda x: csp.get_run_time(x, assignment), reverse=False)  # x is a processor (value)
         rtn = rtn + group
