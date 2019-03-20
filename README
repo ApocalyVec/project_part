@@ -2,17 +2,27 @@ required package:
 numpy
 
 The project file includes:
-    Graph.py: non domain-specific graph class, instantiated by
-    main.py
-    runtime.py, runtimecsp.py, Solver.py
+	Graph.py: non-domain-specific graph class, instantiated by runtimecsp class to contain constraint graph
+	main.py: the script for reading input files, and call methods to solve the csp
+	runtimecsp.py: csp class that has runtime implementation to fit the task, processor problem
+	runtime.py: instantiated by runtimecsp to hold run time, run time cost, and methods relating to them
+	Solver.py: implements algorithms such as ac3, backtracking, inference, etc. to solve csp.
+
+Test file includes:
+t.txt: the first test file provided
+t1.txt: the second test file provided
+t2.txt: test file modified from the first test file
+t3.txt: test file modified from the first test file
+map.txt:  Australia map-coloring problem
+c.txt: processor price file as bonus
 
 
 TO RUN THE CODE:
 1. MAKE SURE THE SYSTEM HAVE Python 3.6 INSTALLED
 2. make sure that Graph.py, main.py, runtime.py, runtimecsp.py, Solver.py are all in the project folder
-3. type 'python main.py' or 'python3.6 main.py' in commandline to run
-4. The program will ask user to provide the path to the graph file
-5. Enter the graph file path, hit enter
-6. The program reads the file, and show the loaded graph
-7. Press enter to continue
-8. All search methods run
+3. type 'python main.py' or 'python3.6 main.py' in the command line to run
+4. The program asks the user to provide the path to the csp file
+5. Enter the csp file path, hit enter
+6. (Bonus) The program asks the user if he or she wants to read a processor price file, enter y or Y if yes, and the program asks the user to provide the path to the processor price file then hit enter. If no, just hit enter
+6. The program reads the file, and try to solve the problem
+7. The program returns solution if there is one. It terminates and notifies the user if the csp is unsolvable

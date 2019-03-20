@@ -77,10 +77,11 @@ class RuntimeCsp:
         self.runtime = Runtime(self.values)
 
 
-    '''
-    add a value to all varibles' domain, and to the values field of the CSP object
-    '''
+
     def add_value(self, value):
+        """
+        add a value to all variables' domain, and to the values field of the CSP object
+        """
         self.values.append(value)
         for var in self.get_all_variables():
             var.domain.append(value)
@@ -97,19 +98,8 @@ class RuntimeCsp:
     def get_values_len(self):
         return len(self.values)
 
-
-    # def get_var_value(self, var):
-    #     return self.assignment[var]
-
-    # def assign_var_with_value(self, var, value):
-    #     self.assignment[var] = value
-
     def get_all_variables(self):
         return self.const_graph.get_all_vertices()
-
-    # def add_value_to_all_variable_domain(self):
-    #     for var in self.get_all_variables():
-    #         var.domain.append(self.values)
 
     def add_var_to_graph(self, var):
         self.const_graph.add_vertex(var)
@@ -128,16 +118,16 @@ class RuntimeCsp:
         if var.name in self.uex.keys():
             return self.uex[var.name]
 
-        '''
-    Create a binary constraint matrix
 
-    :param list const_vars: the variables to be constrained
-    :param dic values: list of values [key: index, value: variable value]
-    :param int equal: constraint type: 1 = binary equals, 0 = binary not equals
-        '''
     # TODO handle duplicate binary varible EXCEPTION
     # TODO should say NO ANSWER if a constraint matrix are all zeros
     def add_biconst(self, const_vars, equal):  # constraint type
+        """
+        Create a binary constraint matrix
+
+        :param list const_vars: the variables to be constrained
+        :param int equal: constraint type: 1 = binary equals, 0 = binary not equals
+        """
         # TODO what if two bi_const have the same constrainting variable
         # The first value in the tuple takes the rows, and the second takes the columns
         self.const_graph.add_edge(self.const_graph.get_vertex(const_vars[0]), self.const_graph.get_vertex(const_vars[1]))
@@ -162,14 +152,15 @@ class RuntimeCsp:
         self.consolidate_matrix()
 
 
-        '''
-    Create a binary constraint matrix for NOT SIMULTANEOUS constraint
 
-    :param list const_vars: the variables to be constrained
-    :param list const_values: the values to be constrained
-    :param dic values: list of values [key: index, value: variable value]
-        '''
     def add_bins(self, const_vars, const_values):
+        """
+        Create a binary constraint matrix for NOT SIMULTANEOUS constraint
+
+        :param list const_vars: the variables to be constrained
+        :param list const_values: the values to be constrained
+        :param dic const_values: list of values [key: index, value: variable value]
+        """
         # TODO what if two bi_const have the same constrainting variable
         # The first value in the tuple takes the rows, and the second takes the columns
         self.const_graph.add_edge(self.const_graph.get_vertex(const_vars[0]),
@@ -188,12 +179,13 @@ class RuntimeCsp:
 
         self.consolidate_matrix()
 
-        '''
-    add unary constraint to all binary constraint matrices
 
-        '''
     # TODO efficiency??? running this for loop everytime
     def consolidate_matrix(self):
+        """
+        add unary constraint to all binary constraint matrices
+
+        """
         for const_vars, const_matrix in self.biconst.items():
             for i in range(len(self.values)):  # modify the constraint matrix
                 for j in range(len(self.values)):
@@ -220,10 +212,11 @@ class RuntimeCsp:
     #         if var1.name == key[0] and var2.name == key[1]:
     #             return value
 
-    '''
-    :return the constraint matrix between two variables
-    '''
+
     def get_biconst(self, var1, var2):
+        """
+        :return the constraint matrix between two variables
+        """
         for key, value in self.biconst.items():
             # because we keep connection in both direction, we only need to check the constraint matrix in one direction
             # if (var1.name == key[0] and var2.name == key[1]) or (var1.name == key[1] and var2.name == key[0]):
@@ -232,16 +225,22 @@ class RuntimeCsp:
             elif var1.name == key[1] and var2.name == key[0]:
                 return value.transpose()  # we transpose the matrix to match the variables' axises
 
-    '''
-    returns a list of pair(list) of variables 
-    '''
+
     def get_arcs(self, var):
+        """
+        :return a list of pair(list) of variables
+        """
         return self.const_graph.get_edges(var)
 
     def get_connecting_vars(self, var):
         return self.const_graph.get_connecting_vertices(var)
 
     def get_connecting_unassigned_vars(self, var, assignment):
+        """
+        :param var:
+        :param assignment:
+        :return: a list of unassigned vars (with the given assignment) that are connected to :param var
+        """
         connecting_vars = self.const_graph.get_connecting_vertices(var)
         rtn = []
         for var in connecting_vars:
